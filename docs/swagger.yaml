@@ -41,6 +41,8 @@ paths:
       summary: Get a list of all games
       description: Returns a list of all games in API
     post:
+      security:
+      - basicAuth: []
       tags:
       - new-game
       summary: Creates a game
@@ -80,8 +82,14 @@ paths:
                 $ref: '#/components/schemas/error'
               example:
                 error: One or all params are missing
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /games/{id}:
     get:
+      security:
+      - basicAuth: []
       tags:
       - details
       summary: Get full details of a game
@@ -96,6 +104,8 @@ paths:
           type: integer
           minimum: 1
       responses:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '200':
           description: Returns full details of a given id game
           content:
@@ -109,7 +119,7 @@ paths:
                     name: Witcher 3
                     price: 29.99
         '404':
-          description: Game was not found in games array
+          description: Game was not found
           content:
             application/json:
               schema:
@@ -118,7 +128,66 @@ paths:
                 Game was not found:
                   value:
                     error: Game not found
+    put:
+      security:
+      - basicAuth: []
+      tags:
+      - update-game
+      summary: Updates a game
+      description: Updates the name and price of an existing game. Requires admin rights.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the game to update
+        schema:
+          type: integer
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/new-game'
+            example:
+              name: Portal 2
+              price: 4.99
+      responses:
+        '200':
+          description: Game updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+              example:
+                id: 9
+                name: Portal 2
+                price: 4.99
+        '400':
+          description: Invalid game ID, missing parameters or invalid game data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Game was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '409':
+          description: Game name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
     delete:
+      security:
+      - basicAuth: []
       tags:
       - delete-game
       summary: Deletes a game
@@ -140,10 +209,14 @@ paths:
             example:
               id: 2
       responses:
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '204':
           description: Game deleted successfully. No content.
         '404':
-          description: Game was not found in games array
+          description: Game was not found
           content:
             application/json:
               schema:
@@ -151,6 +224,29 @@ paths:
               example:
                 error: Game not found
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Admin can view, create, update and delete games. User can view games.
+  responses:
+    Unauthorized:
+      description: Valid credentials are required
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+          example: Basic realm="Games API"
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+    Forbidden:
+      description: Admin rights are required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
   schemas:
     Game:
       type: object
