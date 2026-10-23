@@ -118,6 +118,38 @@ paths:
                 Game was not found:
                   value:
                     error: Game not found
+    delete:
+      tags:
+      - delete-game
+      summary: Deletes a game
+      description: Deletes a game by its ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID of the game to delete
+        schema:
+          type: integer
+          minimum: 1
+      requestBody:
+        description: Game to be deleted
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/delete-game'
+            example:
+              id: 2
+      responses:
+        '204':
+          description: Game deleted successfully. No content.
+        '404':
+          description: Game was not found in games array
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: Game not found
 components:
   schemas:
     Game:
@@ -158,3 +190,11 @@ components:
           type: number
           format: float
           example: 0.99
+    delete-game:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+          example: 2
