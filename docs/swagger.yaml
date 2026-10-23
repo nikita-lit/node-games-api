@@ -2,7 +2,27 @@ openapi: 3.0.2
 info:
   title: Games API
   version: 1.0.0
-  description: "### This is a Swagger UI for our Games API  \n\n### Error handling\nErrors are presented using the HTTP status codes 400-599. The response include a more detailed explanation about the error in the body.\n\n```\n{\n  \"error\": \"Cleartext explanation of the error that occurred\"\n}\n```\n\n### Generic API errors\nThese error responses can be returned by any of the described endpoints.\n\n| HTTP status  |  Description |\n|---|---|\n| 400| Bad input parameters or invalid request. More information can be found in the response body.\n| 401| The consumer does not have access to the requested resource or the provided token is not valid.\n| 404| The requested resource can not be found or the user does not have access to the resource.\n| 5XX| A server error has occurred while processing the request."
+  description: |-
+    ### This is a Swagger UI for our Games API  
+    
+    ### Error handling
+    Errors are presented using the HTTP status codes 400-599. The response include a more detailed explanation about the error in the body.
+    
+    ```
+    {
+      "error": "Cleartext explanation of the error that occurred"
+    }
+    ```
+    
+    ### Generic API errors
+    These error responses can be returned by any of the described endpoints.
+    
+    | HTTP status  |  Description |
+    |---|---|
+    | 400| Bad input parameters or invalid request. More information can be found in the response body.
+    | 401| The consumer does not have access to the requested resource or the provided token is not valid.
+    | 404| The requested resource can not be found or the user does not have access to the resource.
+    | 5XX| A server error has occurred while processing the request.
 paths:
   /games:
     description: ''
@@ -20,6 +40,46 @@ paths:
           description: Returns a list of all games
       summary: Get a list of all games
       description: Returns a list of all games in API
+    post:
+      tags:
+      - new-game
+      summary: Creates a game
+      description: Creates a new game
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/new-game'
+            example:
+              name: Tetris
+              price: 0.99
+      responses:
+        '201':
+          description: Game created successfully
+          headers:
+            Location:
+              description: URL of the newly created game
+              schema:
+                type: string
+                format: uri
+              example: http://localhost:3000/games/9
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+              example:
+                id: 9
+                name: Tetris
+                price: 0.99
+        '400':
+          description: One or all params are missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              example:
+                error: One or all params are missing
   /games/{id}:
     get:
       tags:
@@ -85,3 +145,16 @@ components:
         error:
           type: string
           example: Game not found
+    new-game:
+      type: object
+      required:
+      - name
+      - price
+      properties:
+        name:
+          type: string
+          example: Tetris
+        price:
+          type: number
+          format: float
+          example: 0.99
